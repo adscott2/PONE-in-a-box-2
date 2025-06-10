@@ -40,8 +40,49 @@ float LEDSystem::checkVolume(coordinate LED, coordinate coor, int radius)
 }
 
 void LEDSystem::setVolume(coordinate coor, int radius, int r, int g, int b) {
+float t1 = 1000.;
+float t2 = 2000.;
+float t3 = 3000.;
+float t4 = 4000.;
+float t5 = 5000.;
+float t6 = 6000.;
+if (currentTime < t1){
+  r = 255;
+  g = currentTime/t1*255;
+  b = 0;    
+  }
+if (currentTime >= t1 && currentTime <= t2){
+  r = (255 - (currentTime-t1)/(t2-t1)*255);
+  g = 255;
+  b = 0;    
+}
+if (currentTime >= t2 && currentTime <= t3){
+  r = 0;
+  g = 255;
+  b = (currentTime-t2)/(t3-t2)*255;    
+}
+if (currentTime >= t3 && currentTime <= t4){
+  r = 0;
+  g = (255 - (currentTime-t3)/(t4-t3)*255);  
+  b = 255;    
+}      
+if (currentTime >= t4 && currentTime <= t5){
+  r = (currentTime-t4)/(t5-t4)*255;
+  g = 0;
+  b = 255;    
+}
+if (currentTime >= t5 && currentTime <= t6){
+  r = 255;
+  g = 0;
+  b = (255 - (currentTime-t5)/(t6-t5)*255);
+}
+if (currentTime > t6){
+  r = 255;
+  g = 255;
+  b = 255;    
+}	
   for(int i=0; i<460;i++){
-	float scale = checkVolume(points[i],coor, radius);
+      float scale = checkVolume(points[i],coor, radius);
       if(scale>0){
 	    setPixel(pins[i].strip,pins[i].pixel,int(scale*r),int(scale*g),int(scale*b));
     }
@@ -133,7 +174,19 @@ void LEDSystem::setPixel(int strip, int pixel, int r, int g, int b){
   if(r>255) r=255;
   if(g>255) g=255;
   if(b>255) b=255;
-  strips[strip-2].setPixelColor(pixel, strips[strip-2].Color(r,g,b));
+  if(r < 0) r = 0;
+  if(g < 0) g = 0;
+  if(b < 0) b = 0;
+  if (strip < 2 || (strip - 2) >= NUM_STRIPS) return;	
+  // don't overwrite the pixel if it's already on
+  uint8_t r0, g0, b0;
+  strips[strip-2].getPixelColor(pixel, &r0, &g0, &b0);
+  // uint32_t pixcol = strips[strip-2].getPixelColor(pixel); // alternate
+  // if (pixcol == 0){ // alternate
+  if (r0 == 0 && g0 == 0 && b0 == 0){	
+	strips[strip-2].setPixelColor(pixel, strips[strip-2].Color(r,g,b));
+  // strips[strip-2].setPixelColor(pixel, r, g, b); // alternate	   
+  }	  
 }
 void LEDSystem::lightAll()
 {
